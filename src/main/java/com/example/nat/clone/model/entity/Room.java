@@ -1,0 +1,41 @@
+package com.example.nat.clone.model.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Entity(name = "room")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Room {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    private String name;
+    private Double price;
+    private String status = "available"; // default status
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List< Asset> assets;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_type_id", nullable = false)
+    private RoomType roomType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id", nullable = false)
+    private Hotel hotel;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Reservation> reservations;
+
+}
