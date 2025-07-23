@@ -3,10 +3,12 @@ package com.example.nat.clone.model.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 
+@Builder
 @Data
 public class UserRequest {
     @NotBlank(message = "name cannot be blank")

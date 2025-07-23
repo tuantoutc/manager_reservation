@@ -37,6 +37,19 @@ public class Reservation {
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
-
-
+    @Override
+    public String toString() {
+        return "Reservation{" +
+                "id='" + id + '\'' +
+                ", userId='" + (user != null ? user.getId() : null) + '\'' +
+                ", roomId='" + (room != null ? room.getId() : null) + '\'' +
+                ", startTime=" + StartTime +
+                ", endTime=" + EndTime +
+                ", reservationTime=" + ReservationTime +
+                ", status=" + status +
+                ", notes='" + notes + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }

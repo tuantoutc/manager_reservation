@@ -34,6 +34,8 @@ public class UserServiceImpl implements UserService {
         if(userRepository.existsByName(user.getName())) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
+        user.setCreatedAt(LocalDate.now());
+        user.setUpdatedAt(LocalDate.now());
         return userRepository.save(user);
     }
 
@@ -48,21 +50,13 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(userRepository.save(userEntity), UserDTO.class) ;
     }
 
-    @Override
-    public User updateUser(UserDTO request) {
-        User userEntity = userRepository.findById(request.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        String username = userEntity.getName();
-        userEntity = modelMapper.map(request, User.class);
-        userEntity.setName(username);
-        return userRepository.save(userEntity);
-    }
+
 
     @Override
-    public String deleteUser(List<String> ids) {
-            if(userRepository.existsByIdIn(ids) )
+    public String deleteUser(String id) {
+            if(userRepository.existsById(id) )
             {
-                userRepository.deleteByIdIn(ids);
+                userRepository.deleteById(id);
                 return "Deleted successfully";
             }
             else {
@@ -82,6 +76,8 @@ public class UserServiceImpl implements UserService {
                                         .phone(user.getPhone())
                                         .address(user.getAddress())
                                         .dob(user.getDob())
+                                        .createdAt(LocalDate.now())
+                                        .updatedAt(LocalDate.now())
                                         .build();
         return modelMapper.map(userRepository.save(userEntity), UserDTO.class);
     }

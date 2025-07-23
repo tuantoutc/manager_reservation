@@ -1,14 +1,17 @@
 package com.example.nat.clone;
 
-import com.example.nat.clone.service.HotelService;
-import com.example.nat.clone.service.ReservationService;
-import com.example.nat.clone.service.UserService;
-import com.example.nat.clone.service.ExcelService;
+import com.example.nat.clone.model.dto.HotelDTO;
+import com.example.nat.clone.model.dto.ReservationDTO;
+import com.example.nat.clone.model.dto.RoomDTO;
+import com.example.nat.clone.model.dto.UserDTO;
+import com.example.nat.clone.model.entity.User;
+import com.example.nat.clone.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 @SpringBootApplication
@@ -19,12 +22,14 @@ public class HotelReservationApplication implements CommandLineRunner {
     
     @Autowired
     private UserService userService;
+    @Autowired
+    private RoomService roomService;
     
     @Autowired
     private ReservationService reservationService;
     
     @Autowired
-    private ExcelService excelService;
+    private Excel2Service excel2Service;
 
     private Scanner scanner = new Scanner(System.in);
     private boolean useDatabase = true;
@@ -59,9 +64,10 @@ public class HotelReservationApplication implements CommandLineRunner {
             System.out.println("1. Quản lý khách sạn");
             System.out.println("2. Quản lý khách hàng");
             System.out.println("3. Quản lý đặt phòng");
-            System.out.println("4. Import dữ liệu từ Excel");
-            System.out.println("5. Export dữ liệu ra Excel");
-            System.out.println("6. Chuyển đổi nguồn dữ liệu");
+            System.out.println("4. Quản lý phòng");
+            System.out.println("5. Import dữ liệu từ Excel");
+            System.out.println("6. Export dữ liệu ra Excel");
+            System.out.println("7. Chuyển đổi nguồn dữ liệu");
             System.out.println("0. Thoát");
             System.out.print("Lựa chọn: ");
 
@@ -72,14 +78,45 @@ public class HotelReservationApplication implements CommandLineRunner {
                 case 1: hotelManagementMenu(); break;
                 case 2: userManagementMenu(); break;
                 case 3: reservationManagementMenu(); break;
-                case 4: importFromExcel(); break;
-                case 5: exportToExcel(); break;
-                case 6: chooseDataSource(); break;
+                case 4: roomManagementMenu(); break;
+
+                case 5: importFromExcel(); break;
+                case 6: exportToExcel(); break;
+                case 7: chooseDataSource(); break;
                 case 0: 
                     System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
                     return;
                 default: System.out.println("Lựa chọn không hợp lệ!");
             }
+        }
+    }
+
+    private void roomManagementMenu() {
+        System.out.println("\n=== QUẢN LÝ PHÒNG ===");
+        System.out.println("1. Xem danh sách phòng");
+        System.out.println("2. Xem danh sách phòng trống");
+        System.out.println("3. Xem danh sách phòng đã thuê");
+        System.out.println("4. Thêm phòng");
+        System.out.println("5. Cập nhật thông tin phòng");
+        System.out.println("6. Xóa phòng");
+        System.out.println("0. Quay lại");
+        // Implementation will be handled by service layer
+        System.out.print("Lựa chọn: ");
+
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choice) {
+            case 1: roomService.displayAllRoom(); break;
+            case 2: roomService.displayAllRoomAvailable(); break;
+            case 3: roomService.displayAllRoomUnAvailable(); break;
+            case 4: createRoom(); break;
+            case 5: updateRoom(); break;
+            case 6: deleteRoom(); break;
+            case 0:
+                System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
+                return;
+            default: System.out.println("Lựa chọn không hợp lệ!");
         }
     }
 
@@ -98,9 +135,9 @@ public class HotelReservationApplication implements CommandLineRunner {
 
         switch (choice) {
             case 1: hotelService.displayAllHotels(); break;
-            case 2: hotelService.getAllHotels(); break;
-            case 3: hotelService.getAllHotels(); break;
-            case 4: hotelService.getAllHotels(); break;
+            case 2: createHotel(); break;
+            case 3: updateHotel(); break;
+            case 4: deleteHotel(); break;
             case 0:
                 System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
                 return;
@@ -122,10 +159,9 @@ public class HotelReservationApplication implements CommandLineRunner {
 
         switch (choice) {
             case 1: userService.displayAllUser(); break;
-            case 2: System.out.println("Chức năng thêm người dùng mới!"); break;
-            case 3: System.out.println("Chức năng cập nhật thông tin khách hàng!"); break;
-            case 4: System.out.println("Chức năng xóa khách hàng !"); break;
-
+            case 2: createUser(); break;
+            case 3: updateUser(); break;
+            case 4: deleteUser(); break;
             case 0:
                 System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
                 return;
@@ -142,16 +178,21 @@ public class HotelReservationApplication implements CommandLineRunner {
         System.out.println("5. Check-in");
         System.out.println("6. Check-out");
         System.out.println("0. Quay lại");
+        System.out.print("Lựa chọn: ");
+
+
         // Implementation will be handled by service layer
 
         int choice = scanner.nextInt();
         scanner.nextLine();
 
         switch (choice) {
-            case 1: reservationService.getAllReservations(); break;
-            case 2: System.out.println("Chức năng thêm dat phong  mới!"); break;
-            case 3: System.out.println("Chức năng cập nhật thông tin dat phong!"); break;
-            case 4: System.out.println("Chức năng xóa dat phong !"); break;
+            case 1: reservationService.displayAllReservation(); break;
+            case 2: createReservation(); break;
+            case 3: updateReservation(); break;
+            case 4: deleteReservation(); break;
+            case 5: checkInReservation(); break;
+            case 6: checkOutReservation(); break;
 
             case 0:
                 System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
@@ -176,9 +217,9 @@ public class HotelReservationApplication implements CommandLineRunner {
         
         try {
             switch (choice) {
-                case 1: excelService.importHotels(filePath); break;
-                case 2: excelService.importUsers(filePath); break;
-                case 3: excelService.importReservations(filePath); break;
+                case 1: excel2Service.importHotels(filePath); break;
+                case 2: excel2Service.importUsers(filePath); break;
+                case 3: excel2Service.importReservations(filePath); break;
                 default: System.out.println("Lựa chọn không hợp lệ!");
             }
         } catch (Exception e) {
@@ -191,6 +232,10 @@ public class HotelReservationApplication implements CommandLineRunner {
         System.out.println("1. Export khách sạn");
         System.out.println("2. Export khách hàng");
         System.out.println("3. Export đặt phòng");
+        System.out.println("4. Export phòng trống");
+        System.out.println("5. Export phòng đã thuê");
+
+
         System.out.print("Lựa chọn: ");
         
         int choice = scanner.nextInt();
@@ -201,9 +246,11 @@ public class HotelReservationApplication implements CommandLineRunner {
         
         try {
             switch (choice) {
-                case 1: excelService.exportHotels(filePath); break;
-                case 2: excelService.exportUsers(filePath); break;
-                case 3: excelService.exportReservations(filePath); break;
+                case 1: excel2Service.exportHotels(filePath); break;
+                case 2: excel2Service.exportUsers(filePath); break;
+                case 3: excel2Service.exportReservations(filePath); break;
+                case 4: excel2Service.exportRoomAvailable(filePath); break;
+                case 5: excel2Service.exportRoomUnAvailable(filePath); break;
                 default: System.out.println("Lựa chọn không hợp lệ!");
             }
             System.out.println("Export thành công!");
@@ -212,18 +259,237 @@ public class HotelReservationApplication implements CommandLineRunner {
         }
     }
 
+    private void createHotel() {
+        System.out.println("Chức năng thêm khách sạn mới!");
+        HotelDTO hotel = new HotelDTO();
+        System.out.print("Nhập tên khách sạn: ");
+        hotel.setName(scanner.nextLine());
+        System.out.print("Nhập địa chỉ khách sạn: ");
+        hotel.setAddress(scanner.nextLine());
+        System.out.print("Nhập tên quản lý khách sạn: ");
+        hotel.setManager_name(scanner.nextLine());
+        System.out.print("Nhập số điện thoại quản lý khách sạn: ");
+        hotel.setManager_phone(scanner.nextLine());
+        System.out.print("Nhập số lượng phòng: ");
+        hotel.setNumber_of_room(scanner.nextInt());
 
-    private void GetOutCosole() {
-        System.out.println("----Danh sách khách hàng----");
-        System.out.println("ID --------------------- Name ----------------- Email ----------------- Phone ----------------- Address ----------------- DOB");
-        userService.getAllUsers().forEach(user -> {
-            System.out.printf("%s - %s - %s - %s - %s - %s%n",
-                    user.getId(),
-                    user.getName(),
-                    user.getEmail(),
-                    user.getPhone(),
-                    user.getAddress(),
-                    user.getDob());
-        });
+        hotelService.createHotel(hotel);
     }
+    private void updateHotel() {
+        System.out.println("Chức năng cập nhật khách sạn!");
+        HotelDTO hotel = new HotelDTO();
+        System.out.print("Nhập ID khách sạn cần cập nhật: ");
+        hotel.setId(scanner.nextLine());
+        System.out.print("Nhập tên khách sạn: ");
+        hotel.setName(scanner.nextLine());
+        System.out.print("Nhập địa chỉ khách sạn: ");
+        hotel.setAddress(scanner.nextLine());
+        System.out.print("Nhập tên quản lý khách sạn: ");
+        hotel.setManager_name(scanner.nextLine());
+        System.out.print("Nhập số điện thoại quản lý khách sạn: ");
+        hotel.setManager_phone(scanner.nextLine());
+        System.out.print("Nhập số lượng phòng: ");
+        hotel.setNumber_of_room(scanner.nextInt());
+
+        hotelService.updateHotel(hotel);
+    }
+    private void deleteHotel() {
+        System.out.println("Chức năng xóa khách sạn!");
+        System.out.print("Nhập ID khách sạn cần xóa: ");
+        hotelService.deleteHotel(scanner.nextLine());
+    }
+    private void createUser()
+    {
+        User user = new User();
+
+        System.out.println("Chức năng thêm người dùng mới!");
+        System.out.print("Nhập tên khách hàng: ");
+        user.setName(scanner.nextLine());
+        System.out.print("Nhập email khách hàng: ");
+        user.setEmail(scanner.nextLine());
+        System.out.print("Nhập số điện thoại khách hàng: ");
+        user.setPhone( scanner.nextLine());
+        System.out.print("Nhập địa chỉ khách hàng: ");
+        user.setAddress( scanner.nextLine());
+        System.out.print("Nhập ngày sinh khách hàng (yyyy-MM-dd): ");
+        user.setDob(LocalDate.parse( scanner.nextLine()));
+        userService.createUser(user);
+    }
+
+    private void updateUser() {
+        UserDTO user = new UserDTO();
+        System.out.println("Chức năng cập nhật thông tin khách hàng!");
+        System.out.print("Nhập ID khách hàng cần cập nhật: ");
+        user.setId(scanner.nextLine());
+        System.out.print("Nhập tên khách hàng: ");
+        user.setName(scanner.nextLine());
+        System.out.print("Nhập email khách hàng: ");
+        user.setEmail(scanner.nextLine());
+        System.out.print("Nhập số điện thoại khách hàng: ");
+        user.setPhone( scanner.nextLine());
+        System.out.print("Nhập địa chỉ khách hàng: ");
+        user.setAddress( scanner.nextLine());
+        System.out.print("Nhập ngày sinh khách hàng (yyyy-MM-dd): ");
+        user.setDob(LocalDate.parse( scanner.nextLine()));
+
+        userService.updatedUser(user);
+    }
+    private void deleteUser() {
+        System.out.println("Chức năng xóa khách hàng!");
+        System.out.print("Nhập ID khách hàng cần xóa: ");
+        String deleteUserId = scanner.nextLine();
+        userService.deleteUser(deleteUserId);
+    }
+    private void deleteRoom() {
+        System.out.println("Chức năng xóa phòng!");
+        System.out.print("Nhập ID phòng cần xóa: ");
+        String deleteUserId = scanner.nextLine();
+        roomService.deleteRoom(deleteUserId);
+    }
+    private void updateRoom() {
+
+        System.out.println("Chức năng cập nhật thông tin phòng!");
+        RoomDTO room = new RoomDTO();
+        System.out.print("Nhập ID phòng cần cập nhật: ");
+        room.setId(scanner.nextLine());
+        System.out.print("Nhập tên phòng: ");
+        room.setName(scanner.nextLine());
+        System.out.print("Nhập giá phòng: ");
+        room.setPrice(Double.parseDouble(scanner.nextLine()));
+        System.out.print("Nhập trạng thái phòng (available/unavailable): ");
+        room.setStatus(scanner.nextLine());
+
+        // Assuming roomTypeId and hotelId are required for updating
+        System.out.println("Các loại phòng có sẵn: ");
+        System.out.println("1. Phòng bình thường");
+        System.out.println("2. Phòng cao cấp");
+        System.out.println("3. Phòng VIP");
+        int choice1 = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choice1) {
+            case 1: room.setRoomTypeId("1"); break;
+            case 2: room.setRoomTypeId("2"); break;
+            case 3: room.setRoomTypeId("3"); break;
+            default: System.out.println("Lựa chọn không hợp lệ!");
+        }
+        System.out.print("Nhập ID khách sạn: ");
+        room.setHotelId(scanner.nextLine());
+
+        roomService.updateRoom(room);
+    }
+
+    private void createRoom() {
+        System.out.println("Chức năng thêm phòng mới!");
+        RoomDTO room = new RoomDTO();
+        System.out.print("Nhập tên phòng: ");
+        room.setName(scanner.nextLine());
+        System.out.print("Nhập giá phòng: ");
+        room.setPrice(Double.parseDouble(scanner.nextLine()));
+
+        System.out.print("Nhập trạng thái phòng (available/unavailable): ");
+
+        room.setStatus(scanner.nextLine());
+
+        // Assuming roomTypeId and hotelId are required for creating
+        System.out.println("Các loại phòng có sẵn: ");
+        System.out.println("1. Phòng bình thường");
+        System.out.println("2. Phòng cao cấp");
+        System.out.println("3. Phòng VIP");
+        System.out.print("Chọn loại phòng (1-3): ");
+        int choice2 = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choice2) {
+            case 1: room.setRoomTypeId("1"); break;
+            case 2: room.setRoomTypeId("2"); break;
+            case 3: room.setRoomTypeId("3"); break;
+            default: System.out.println("Lựa chọn không hợp lệ!");
+        }
+        System.out.print("Nhập ID khách sạn: ");
+        room.setHotelId(scanner.nextLine());
+
+        roomService.createRoom(room);
+    }
+
+    private void createReservation() {
+        System.out.println("Chức năng tạo đặt phòng mới!");
+
+        System.out.println(" Các phòng có sẵn: ");
+        roomService.displayAllRoomAvailable();
+
+        ReservationDTO reservation = new ReservationDTO();
+        System.out.print("Nhập ID phòng cần đặt: ");
+        reservation.setRoomId(scanner.nextLine());
+        System.out.print("Nhập tên của bạn: ");
+        reservation.setUsername(scanner.nextLine());
+        System.out.print("Nhập số điện thoại của bạn: ");
+        reservation.setPhone(scanner.nextLine());
+
+        System.out.print("Nhập ngày bắt đầu đặt phòng (yyyy-MM-dd): ");
+        reservation.setStartTime(LocalDate.parse(scanner.nextLine()));
+        System.out.print("Nhập ngày kết thúc đặt phòng (yyyy-MM-dd): ");
+        reservation.setEndTime(LocalDate.parse(scanner.nextLine()));
+
+        System.out.print("Nhập ghi chú (nếu có): ");
+        reservation.setNotes(scanner.nextLine());
+        reservation.setCreatedAt(LocalDate.now());
+        reservation.setUpdatedAt(LocalDate.now());
+        reservation.setStatus("Pending");
+        reservationService.createReservation(reservation);
+
+    }
+
+    private void updateReservation() {
+        System.out.println("Chức năng cập nhật thông tin đặt phòng!");
+
+        ReservationDTO reservation = new ReservationDTO();
+
+        System.out.print("Nhập mã đặt phòng cần cập nhật: ");
+        reservation.setId(scanner.nextLine());
+
+        System.out.println(" Các phòng có sẵn: ");
+        roomService.displayAllRoomAvailable();
+
+        System.out.print("Nhập ID phòng cần đặt: ");
+        String roomId = scanner.nextLine();
+        reservation.setRoomId(roomId);
+        System.out.print("Nhập tên của bạn: ");
+        reservation.setUsername(scanner.nextLine());
+        System.out.print("Nhập số điện thoại của bạn: ");
+        reservation.setPhone(scanner.nextLine());
+        System.out.print("Nhập ngày bắt đầu đặt phòng (yyyy-MM-dd): ");
+        reservation.setStartTime(LocalDate.parse(scanner.nextLine()));
+        System.out.print("Nhập ngày kết thúc đặt phòng (yyyy-MM-dd): ");
+        reservation.setEndTime(LocalDate.parse(scanner.nextLine()));
+        reservation.setReservationTime(LocalDate.now());
+        System.out.print("Nhập ghi chú (nếu có): ");
+        reservation.setNotes(scanner.nextLine());
+        System.out.print("Nhập trạng thái đặt phòng (Pending/Confirmed/Canceled): ");
+        reservation.setStatus(scanner.nextLine());
+        reservation.setUpdatedAt(LocalDate.now());
+        reservationService.updateReservation(reservation);
+
+    }
+    private void deleteReservation() {
+        System.out.println("Chức năng xóa đặt phòng!");
+        System.out.print("Nhập ID đặt phòng cần xóa: ");
+        String reservationId = scanner.nextLine();
+        reservationService.deleteReservation(reservationId);
+    }
+    private void checkInReservation() {
+        System.out.println("Chức năng check-in đặt phòng!");
+        System.out.print("Nhập ma đặt phòng cần check-in: ");
+        String reservationId = scanner.nextLine();
+        reservationService.checkInReservation(reservationId);
+    }
+    private void checkOutReservation() {
+        System.out.println("Chức năng check-out đặt phòng!");
+        System.out.print("Nhập ID đặt phòng cần check-out: ");
+        String reservationId = scanner.nextLine();
+        reservationService.checkOutReservation(reservationId);
+    }
+
+
+
 }

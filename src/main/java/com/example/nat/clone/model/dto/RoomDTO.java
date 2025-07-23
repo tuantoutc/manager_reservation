@@ -11,20 +11,14 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
-public class ReservationDTO {
+public class RoomDTO {
     private String id;
     private String name;
-    private LocalDate StartTime;
-    private LocalDate EndTime;
-    private LocalDate ReservationTime;
-    private String notes;
-    private String status ; // PENDING, CONFIRMED, CHECKED_IN, COMPLETED
+    private Double price;
+    private String status ; // AVAILABLE, BOOKED, OCCUPIED, OUT_OF_SERVICE
     private LocalDate createdAt;
     private LocalDate updatedAt;
+    private String roomTypeId; // Foreign key to RoomType
+    private String hotelId; // Foreign key to Hotel
 
-    private String username;
-    private String phone;
-
-    private String roomId;
 }

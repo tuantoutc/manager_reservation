@@ -11,6 +11,8 @@ public enum ErrorCode {
 
     USER_NOT_FOUND(404, "User not found"),
     ROOM_NOT_FOUND(404, "Room not found"),
+    ROOM_TYPE_NOT_FOUND(404, "Room type not found"),
+    HOTEL_NOT_FOUND(404, "Hotel not found"),
     RESERVATION_NOT_FOUND(404, "Reservation not found"),
     USER_ALREADY_EXISTS(409, "User already exists"),
     PASSWORD_INVALID(400, "Password is invalid"),

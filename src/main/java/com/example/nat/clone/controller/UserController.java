@@ -47,10 +47,10 @@ public class UserController {
         return ResponseEntity.ok().body(userService.updatedUser(request));
     }
 
-    @DeleteMapping()
-    public ResponseEntity<String> deleteUser(@RequestParam(value = "ids") String ids) {
-        return ResponseEntity.ok().body(userService.deleteUser(List.of(ids.split(","))));
-    }
+//    @DeleteMapping()
+//    public ResponseEntity<String> deleteUser(@RequestParam(value = "ids") String ids) {
+//        return ResponseEntity.ok().body(userService.deleteUser(List.of(ids.split(","))));
+//    }
 
 
 }

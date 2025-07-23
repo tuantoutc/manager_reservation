@@ -20,9 +20,8 @@ public interface UserService {
 
     public UserDTO createdUser(UserRequest user);
 
-    public User updateUser(UserDTO request);
 
-    public String deleteUser(List<String> ids);
+    public String deleteUser(String id);
 
     public UserDTO updatedUser(UserDTO request);
 

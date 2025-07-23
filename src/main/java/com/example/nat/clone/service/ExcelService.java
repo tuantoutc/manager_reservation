@@ -93,7 +93,6 @@ public class ExcelService {
     
     public void exportUsers(String filePath) throws IOException {
         List<UserDTO> users = userService.getAllUsers();
-        
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Users");
         
@@ -150,7 +149,7 @@ public class ExcelService {
     }
     
     public void exportReservations(String filePath) throws IOException {
-        List<Reservation> reservations = reservationService.getAllReservations();
+        List<ReservationDTO> reservations = reservationService.getAllReservationDTO();
         
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Reservations");
@@ -164,10 +163,13 @@ public class ExcelService {
         headerRow.createCell(4).setCellValue("Ngày đặt");
         headerRow.createCell(5).setCellValue("Ghi chú");
         headerRow.createCell(6).setCellValue("Trạng thái");
+        headerRow.createCell(7).setCellValue("Tên người dùng");
+        headerRow.createCell(8).setCellValue("Số điện thoại");
+        headerRow.createCell(9).setCellValue("ID phòng");
         
         // Fill data2
         int rowNum = 1;
-        for (Reservation reservation : reservations) {
+        for (ReservationDTO reservation : reservations) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(reservation.getId());
             row.createCell(1).setCellValue(reservation.getName());
@@ -176,6 +178,9 @@ public class ExcelService {
             row.createCell(4).setCellValue(reservation.getReservationTime().toString());
             row.createCell(5).setCellValue(reservation.getNotes());
             row.createCell(6).setCellValue(reservation.getStatus());
+            row.createCell(7).setCellValue(reservation.getUsername());
+            row.createCell(8).setCellValue(reservation.getPhone());
+            row.createCell(9).setCellValue(reservation.getId());
         }
         
         FileOutputStream fileOut = new FileOutputStream(filePath);
@@ -199,8 +204,9 @@ public class ExcelService {
                     .ReservationTime(getCellValueAsLocalDate(row.getCell(3)))
                     .notes(getCellValueAsString(row.getCell(4)))
                     .status(getCellValueAsString(row.getCell(5)))
-                    .createdAt(LocalDate.now())
-                    .updatedAt(LocalDate.now())
+                    .username(getCellValueAsString(row.getCell(6)))
+                    .phone(getCellValueAsString(row.getCell(7)))
+                    .roomId(getCellValueAsString(row.getCell(8)))
                     .build();
                 
                 reservationService.createReservation(reservation);

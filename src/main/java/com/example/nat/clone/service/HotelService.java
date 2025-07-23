@@ -1,5 +1,7 @@
 package com.example.nat.clone.service;
 
+import com.example.nat.clone.exception.AppException;
+import com.example.nat.clone.exception.ErrorCode;
 import com.example.nat.clone.model.dto.HotelDTO;
 import com.example.nat.clone.model.entity.Hotel;
 import com.example.nat.clone.repository.HotelRepository;
@@ -36,22 +38,23 @@ public class HotelService {
         return hotelRepository.save(hotel1);
     }
     
-    public Hotel updateHotel(String id, Hotel hotelDetails) {
-        Optional<Hotel> hotelOpt = hotelRepository.findById(id);
+    public Hotel updateHotel( HotelDTO hotel) {
+        Optional<Hotel> hotelOpt = hotelRepository.findById(hotel.getId());
         if (hotelOpt.isPresent()) {
-            Hotel hotel = hotelOpt.get();
-            hotel.setName(hotelDetails.getName());
-            hotel.setAddress(hotelDetails.getAddress());
-            hotel.setManager_name(hotelDetails.getManager_name());
-            hotel.setManager_phone(hotelDetails.getManager_phone());
-            hotel.setNumber_of_room(hotelDetails.getNumber_of_room());
-            hotel.setUpdatedAt(LocalDate.now());
-            return hotelRepository.save(hotel);
+            Hotel hotel1 = hotelOpt.get();
+            hotel1 = modelMapper.map(hotel, Hotel.class);
+            hotel1.setUpdatedAt(LocalDate.now());
+            return hotelRepository.save(hotel1);
         }
         return null;
     }
     
     public void deleteHotel(String id) {
+        if(id == null || id.isEmpty()) {
+            throw new AppException(ErrorCode.BAD_REQUEST);
+        }
+        Hotel hotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
         hotelRepository.deleteById(id);
     }
     

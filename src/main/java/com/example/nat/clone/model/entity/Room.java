@@ -20,7 +20,7 @@ public class Room {
     private String id;
     private String name;
     private Double price;
-    private String status = "available"; // default status
+    private String status; // default status
     private LocalDate createdAt;
     private LocalDate updatedAt;
 
@@ -38,4 +38,15 @@ public class Room {
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reservation> reservations;
 
+    @Override
+    public String toString() {
+        return "Room{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", status='" + status + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
