@@ -28,7 +28,9 @@ public enum ErrorCode {
     UNPROCESSABLE_ENTITY(422, "Unprocessable entity"),
     SERVICE_UNAVAILABLE(503, "Service unavailable"),
     GATEWAY_TIMEOUT(504, "Gateway timeout"),
-    INVALID_KEY(401, "Invalid error");
+    INVALID_KEY(401, "Invalid error"),
+    EMAIL_INVALID(400, "Email is invalid"),
+    Time_INVALID(400, "Time is invalid");
 
     private int code;
     private String message;

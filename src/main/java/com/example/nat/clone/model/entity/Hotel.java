@@ -1,10 +1,7 @@
 package com.example.nat.clone.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +24,12 @@ public class Hotel {
     private LocalDate createdAt;
     private LocalDate updatedAt;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    List<RoomType> roomTypes;
+
+    @OneToMany( mappedBy = "hotel",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     List<Room> rooms;
 
 

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -19,6 +20,5 @@ public class RoomDTO {
     private LocalDate createdAt;
     private LocalDate updatedAt;
     private String roomTypeId; // Foreign key to RoomType
-    private String hotelId; // Foreign key to Hotel
-
+    private String hotelId; // Foreign key to
 }

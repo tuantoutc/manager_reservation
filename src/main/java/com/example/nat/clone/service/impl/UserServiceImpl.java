@@ -1,11 +1,11 @@
 package com.example.nat.clone.service.impl;
 
+import com.example.nat.clone.TableFormatter;
 import com.example.nat.clone.exception.AppException;
 import com.example.nat.clone.exception.ErrorCode;
 import com.example.nat.clone.model.dto.UserDTO;
-import com.example.nat.clone.model.entity.Hotel;
 import com.example.nat.clone.model.entity.User;
-import com.example.nat.clone.model.request.UserRequest;
+import com.example.nat.clone.model.request.UserCreateRequest;
 import com.example.nat.clone.repository.UserRepository;
 import com.example.nat.clone.service.UserService;
 import jakarta.transaction.Transactional;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -26,6 +25,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private ModelMapper modelMapper;
+
 
 
 
@@ -64,10 +64,10 @@ public class UserServiceImpl implements UserService {
                 }
     }
     @Override
-    public UserDTO createdUser(UserRequest user) {
+    public UserDTO createdUser(UserCreateRequest user) {
 
         if(userRepository.existsByName(user.getName())) {
-            throw new RuntimeException("Username already exists");
+            throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
         User userEntity =  User.builder()
@@ -94,25 +94,41 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return modelMapper.map(userEntity, UserDTO.class);
     }
-
     @Override
+    // Trong UserService
     public void displayAllUser() {
-        List<UserDTO> users = getAllUsers();
-        System.out.println("\n=== DANH SÁCH KHÁCH HÀNG ===");
-        System.out.println("ID --------------------- Name ----------------- Email ----------------- Phone ----------------- Address ----------------- DOB");
-        users.forEach(user -> {
-            System.out.printf("%s - %s - %s - %s - %s - %s%n",
-                    user.getId(),
-                    user.getName(),
-                    user.getEmail(),
-                    user.getPhone(),
-                    user.getAddress(),
-                    user.getDob());
-        });
+        List<User> users = userRepository.findAll();
 
+        String[] headers = {"ID", "Tên", "Email", "SĐT", "Địa chỉ", "Ngày sinh"};
+        String[][] data = new String[users.size()][6];
+
+        for (int i = 0; i < users.size(); i++) {
+            User user = users.get(i);
+            data[i][0] = user.getId();
+            data[i][1] = user.getName();
+            data[i][2] = user.getEmail();
+            data[i][3] = user.getPhone();
+            data[i][4] = user.getAddress();
+            data[i][5] = user.getDob() != null ? user.getDob().toString() : "";
+        }
+
+        TableFormatter.printTable(headers, data);
     }
-
-
+//    public void displayAllUser() {
+//        List<UserDTO> users = getAllUsers();
+//        System.out.println("\n=== DANH SÁCH KHÁCH HÀNG ===");
+//        System.out.println("ID --------------------- Name ----------------- Email ----------------- Phone ----------------- Address ----------------- DOB");
+//        users.forEach(user -> {
+//            System.out.printf("%s - %s - %s - %s - %s - %s%n",
+//                    user.getId(),
+//                    user.getName(),
+//                    user.getEmail(),
+//                    user.getPhone(),
+//                    user.getAddress(),
+//                    user.getDob());
+//        });
+//
+//    }
 
 
 }

@@ -2,11 +2,13 @@ package com.example.nat.clone.exception;
 
 
 import com.example.nat.clone.model.dto.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,6 +32,7 @@ public class GlobalExceptionHandler {
         }
         catch (IllegalArgumentException error)
         {
+            log.info("Invalid enum key: {}", enumkey);
         }
 
         ApiResponse response = ApiResponse.builder()

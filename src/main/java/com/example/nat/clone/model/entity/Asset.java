@@ -22,8 +22,9 @@ public class Asset {
     private LocalDate createdAt;
     private LocalDate updatedAt;
 
+
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
+    @JoinColumn(name = "room_type_id", nullable = false)
+    private RoomType roomType;
 
 }

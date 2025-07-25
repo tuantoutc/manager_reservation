@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,4 +21,5 @@ public class HotelDTO {
     private Integer number_of_room;
     private LocalDate createdAt;
     private LocalDate updatedAt;
+    private List<RoomTypeDTO> roomTypes; // List of RoomTypeDTO
 }

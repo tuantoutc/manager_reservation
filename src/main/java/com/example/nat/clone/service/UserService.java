@@ -1,7 +1,7 @@
 package com.example.nat.clone.service;
 
 import com.example.nat.clone.model.dto.UserDTO;
-import com.example.nat.clone.model.request.UserRequest;
+import com.example.nat.clone.model.request.UserCreateRequest;
 import com.example.nat.clone.model.entity.User;
 import com.example.nat.clone.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ public interface UserService {
 
     public UserDTO getUserById(String id);
 
-    public UserDTO createdUser(UserRequest user);
+    public UserDTO createdUser(UserCreateRequest user);
 
 
     public String deleteUser(String id);

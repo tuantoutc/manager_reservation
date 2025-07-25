@@ -6,7 +6,7 @@ import com.example.nat.clone.model.dto.ReservationDTO;
 import com.example.nat.clone.model.dto.RoomDTO;
 import com.example.nat.clone.model.dto.UserDTO;
 import com.example.nat.clone.model.entity.Hotel;
-import com.example.nat.clone.model.request.UserRequest;
+import com.example.nat.clone.model.request.UserCreateRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -256,7 +256,7 @@ public class Excel2Service {
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             Row row = sheet.getRow(i);
             if (row != null) {
-                UserRequest user = UserRequest.builder()
+                UserCreateRequest user = UserCreateRequest.builder()
                         .name(row.getCell(1).getStringCellValue())
                         .email(row.getCell(2).getStringCellValue())
                         .phone(row.getCell(3).getStringCellValue())

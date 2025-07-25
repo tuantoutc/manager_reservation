@@ -1,5 +1,6 @@
 package com.example.nat.clone.service;
 
+import com.example.nat.clone.TableFormatter;
 import com.example.nat.clone.converter.ReservationConverToDTO;
 import com.example.nat.clone.exception.AppException;
 import com.example.nat.clone.exception.ErrorCode;
@@ -111,6 +112,7 @@ public class ReservationService {
                         .build();
                 user = userRepository.save(newuser);
             }
+            validateReservationTimes(reser.getStartTime(), reser.getEndTime());
 
             Room room =  roomRepository.findById(reser.getRoomId()).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
@@ -149,6 +151,8 @@ public class ReservationService {
                     .build();
             user = userRepository.save(newuser);
         }
+
+        validateReservationTimes(reser.getStartTime(), reser.getEndTime());
         Room room =  roomRepository.findById(reser.getRoomId()).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
         reser1 = Reservation.builder()
                 .id(reser.getId())
@@ -202,23 +206,45 @@ public class ReservationService {
             throw new AppException(ErrorCode.BAD_REQUEST);
         }
     }
+    // Trong ReservationService
     public void displayAllReservation() {
-        List<Reservation> reservation = getAllReservations();
-        System.out.println("\n=== DANH SÁCH ĐẶT PHÒNG ===");
-        System.out.println("ID ---------------------------- Name ----------------- Start Time ----------------- End Time ----------------- Status ----------------- Tên người đặt ----------------- Phone----------------- Reservation Time ----------------- tên phòng");
-        reservation.forEach(reser -> {
-            System.out.printf("%s - %s - %s - %s - %s - %s - %s - %s - %s%n",
-                    reser.getId(),
-                    reser.getName(),
-                    reser.getStartTime(),
-                    reser.getEndTime(),
-                    reser.getStatus(),
-                    reser.getUser().getName(),
-                    reser.getUser().getPhone(),
-                    reser.getReservationTime(),
-                    reser.getRoom().getName());
+        List<Reservation> reservations = reservationRepository.findAll();
 
-        });
+        String[] headers = {"ID", "Tên KH", "SĐT", "Phòng", "Ngày bắt đầu", "Ngày kết thúc", "Trạng thái"};
+        String[][] data = new String[reservations.size()][7];
+
+        for (int i = 0; i < reservations.size(); i++) {
+            Reservation reservation = reservations.get(i);
+            data[i][0] = reservation.getId();
+            data[i][1] = reservation.getUser() != null ? reservation.getUser().getName() : "";
+            data[i][2] = reservation.getUser() != null ? reservation.getUser().getPhone() : "";
+            data[i][3] = reservation.getRoom() != null ? reservation.getRoom().getName() : "";
+            data[i][4] = reservation.getStartTime() != null ? reservation.getStartTime().toString() : "";
+            data[i][5] = reservation.getEndTime() != null ? reservation.getEndTime().toString() : "";
+            data[i][6] = reservation.getStatus();
+        }
+
+        TableFormatter.printTable(headers, data);
+    }
+    private void validateReservationTimes(LocalDate startTime, LocalDate endTime) {
+        if (startTime == null || endTime == null ) {
+            throw new AppException(ErrorCode.Time_INVALID);
+        }
+
+        // Kiểm tra StartTime phải trước EndTime
+        if (startTime.isAfter(endTime)) {
+            throw new AppException(ErrorCode.Time_INVALID);
+        }
+
+        // Kiểm tra StartTime phải sau hoặc bằng ReservationTime
+        if (startTime.isBefore(LocalDate.now())) {
+            throw new AppException(ErrorCode.Time_INVALID);
+        }
+
+        // Kiểm tra EndTime phải sau hoặc bằng ReservationTime
+        if (endTime.isBefore(LocalDate.now())) {
+            throw new AppException(ErrorCode.Time_INVALID);
+        }
     }
 
 }

@@ -5,20 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.LocalDate;
+import java.util.List;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class UserDTO  {
+@Builder
+public class RoomTypeDTO {
     private String id;
     private String name;
-    private String email;
-    private String phone;
-    private String address;
-    private LocalDate dob;
+    private String description;
+
+    private List<AssetDTO> assets; // List of assets associated with this room type
 
 }

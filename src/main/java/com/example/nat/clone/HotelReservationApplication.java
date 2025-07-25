@@ -1,9 +1,6 @@
 package com.example.nat.clone;
 
-import com.example.nat.clone.model.dto.HotelDTO;
-import com.example.nat.clone.model.dto.ReservationDTO;
-import com.example.nat.clone.model.dto.RoomDTO;
-import com.example.nat.clone.model.dto.UserDTO;
+import com.example.nat.clone.model.dto.*;
 import com.example.nat.clone.model.entity.User;
 import com.example.nat.clone.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +9,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 @SpringBootApplication
@@ -30,6 +29,12 @@ public class HotelReservationApplication implements CommandLineRunner {
     
     @Autowired
     private Excel2Service excel2Service;
+
+    @Autowired
+    private RoomTypeService roomTypeService;
+
+    @Autowired
+    private AssetService assetService;
 
     private Scanner scanner = new Scanner(System.in);
     private boolean useDatabase = true;
@@ -68,6 +73,7 @@ public class HotelReservationApplication implements CommandLineRunner {
             System.out.println("5. Import dữ liệu từ Excel");
             System.out.println("6. Export dữ liệu ra Excel");
             System.out.println("7. Chuyển đổi nguồn dữ liệu");
+            System.out.println("8. Quản lý loại phòng và tài sản");
             System.out.println("0. Thoát");
             System.out.print("Lựa chọn: ");
 
@@ -83,6 +89,8 @@ public class HotelReservationApplication implements CommandLineRunner {
                 case 5: importFromExcel(); break;
                 case 6: exportToExcel(); break;
                 case 7: chooseDataSource(); break;
+                case 8: roomTypeAndAssetManagementMenu(); break;
+
                 case 0: 
                     System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
                     return;
@@ -126,6 +134,7 @@ public class HotelReservationApplication implements CommandLineRunner {
         System.out.println("2. Thêm khách sạn mới");
         System.out.println("3. Cập nhật thông tin khách sạn");
         System.out.println("4. Xóa khách sạn");
+        System.out.println("5. Cập nhật thông tin cho loại phòng của khách sạn");
         System.out.println("0. Quay lại");
         // Implementation will be handled by service layer
         System.out.print("Lựa chọn: ");
@@ -138,6 +147,7 @@ public class HotelReservationApplication implements CommandLineRunner {
             case 2: createHotel(); break;
             case 3: updateHotel(); break;
             case 4: deleteHotel(); break;
+            case 5: deleteHotel(); break;
             case 0:
                 System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
                 return;
@@ -259,6 +269,39 @@ public class HotelReservationApplication implements CommandLineRunner {
         }
     }
 
+    private void roomTypeAndAssetManagementMenu() {
+        System.out.println("\n=== QUẢN LÝ LOẠI PHÒNG VÀ TÀI SẢN ===");
+        System.out.println("1. Xem các loại phòng của khách sạn");
+        System.out.println("2. Thêm loại phòng mới cho khách sạn");
+        System.out.println("3. Cập nhật thông tin loại phòng của khách sạn");
+        System.out.println("4. Xóa loại phòng của khách sạn");
+        System.out.println("5. Thêm tài sản cho loại phòng của khách sạn");
+        System.out.println("6. Cập nhật thông tin tài sản của loại phòng");
+        System.out.println("7. Xóa tài sản của loại phòng");
+        System.out.println("0. Quay lại");
+        // Implementation will be handled by service layer
+        System.out.print("Lựa chọn: ");
+
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choice) {
+            case 1: getRoomTypeByHotelId(); break;
+            case 2: createRoomType(); break;
+            case 3: updateRoomType(); break;
+            case 4: deleteRoomType(); break;
+            case 5: createAsset(); break;
+            case 6: updateAsset(); break;
+            case 7: deleteAsset(); break;
+
+            case 0:
+                System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
+                return;
+            default: System.out.println("Lựa chọn không hợp lệ!");
+        }
+    }
+
+
     private void createHotel() {
         System.out.println("Chức năng thêm khách sạn mới!");
         HotelDTO hotel = new HotelDTO();
@@ -272,6 +315,25 @@ public class HotelReservationApplication implements CommandLineRunner {
         hotel.setManager_phone(scanner.nextLine());
         System.out.print("Nhập số lượng phòng: ");
         hotel.setNumber_of_room(scanner.nextInt());
+
+        scanner.nextLine();// Thêm dòng này để consume ký tự xuống dòng
+
+        List<RoomTypeDTO> roomTypeDTOS = new ArrayList<>();
+        System.out.println("Nhập thông tin loại phòng mà khách sạn có (nhập 'done' để kết thúc):");
+        while (true) {
+            RoomTypeDTO  roomType = new RoomTypeDTO();
+            System.out.print("Tên loại phòng: ");
+            String roomTypeName = scanner.nextLine();
+            if (roomTypeName.equalsIgnoreCase("done")) {
+                break;
+            }
+            roomType.setName(roomTypeName);
+            System.out.print("Nhập mô tả loại phòng: ");
+            roomType.setDescription(scanner.nextLine());
+
+            roomTypeDTOS.add(roomType);
+        }
+        hotel.setRoomTypes(roomTypeDTOS);
 
         hotelService.createHotel(hotel);
     }
@@ -290,6 +352,25 @@ public class HotelReservationApplication implements CommandLineRunner {
         hotel.setManager_phone(scanner.nextLine());
         System.out.print("Nhập số lượng phòng: ");
         hotel.setNumber_of_room(scanner.nextInt());
+
+        scanner.nextLine();// Thêm dòng này để consume ký tự xuống dòng
+
+        List<RoomTypeDTO> roomTypeDTOS = new ArrayList<>();
+        System.out.println("Nhập thông tin loại phòng mà khách sạn có (nhập 'done' để kết thúc):");
+        while (true) {
+            RoomTypeDTO  roomType = new RoomTypeDTO();
+            System.out.print("Tên loại phòng: ");
+            String roomTypeName = scanner.nextLine();
+            if (roomTypeName.equalsIgnoreCase("done")) {
+                break;
+            }
+            roomType.setName(roomTypeName);
+            System.out.print("Nhập mô tả loại phòng: ");
+            roomType.setDescription(scanner.nextLine());
+
+            roomTypeDTOS.add(roomType);
+        }
+        hotel.setRoomTypes(roomTypeDTOS);
 
         hotelService.updateHotel(hotel);
     }
@@ -359,22 +440,24 @@ public class HotelReservationApplication implements CommandLineRunner {
         System.out.print("Nhập trạng thái phòng (available/unavailable): ");
         room.setStatus(scanner.nextLine());
 
-        // Assuming roomTypeId and hotelId are required for updating
-        System.out.println("Các loại phòng có sẵn: ");
-        System.out.println("1. Phòng bình thường");
-        System.out.println("2. Phòng cao cấp");
-        System.out.println("3. Phòng VIP");
-        int choice1 = scanner.nextInt();
-        scanner.nextLine();
 
-        switch (choice1) {
-            case 1: room.setRoomTypeId("1"); break;
-            case 2: room.setRoomTypeId("2"); break;
-            case 3: room.setRoomTypeId("3"); break;
-            default: System.out.println("Lựa chọn không hợp lệ!");
-        }
         System.out.print("Nhập ID khách sạn: ");
         room.setHotelId(scanner.nextLine());
+
+        List<RoomTypeDTO > roomTypes = roomTypeService.getAllRoomTypes(room.getHotelId());
+        if(roomTypes.isEmpty()) {
+            System.out.println("Không có loại phòng nào được định nghĩa cho khách sạn này.");
+            return;
+        }
+        else{
+            System.out.println("Các loại phòng có sẵn: ");
+            for (int i = 0; i < roomTypes.size(); i++) {
+                RoomTypeDTO roomType = roomTypes.get(i);
+                System.out.printf("%s. %s - %s%n", roomType.getId() , roomType.getName(), roomType.getDescription());
+            }
+            System.out.print("Nhập ID loại phòng: ");
+            room.setRoomTypeId(scanner.nextLine());
+        }
 
         roomService.updateRoom(room);
     }
@@ -386,29 +469,26 @@ public class HotelReservationApplication implements CommandLineRunner {
         room.setName(scanner.nextLine());
         System.out.print("Nhập giá phòng: ");
         room.setPrice(Double.parseDouble(scanner.nextLine()));
-
         System.out.print("Nhập trạng thái phòng (available/unavailable): ");
-
         room.setStatus(scanner.nextLine());
-
-        // Assuming roomTypeId and hotelId are required for creating
-        System.out.println("Các loại phòng có sẵn: ");
-        System.out.println("1. Phòng bình thường");
-        System.out.println("2. Phòng cao cấp");
-        System.out.println("3. Phòng VIP");
-        System.out.print("Chọn loại phòng (1-3): ");
-        int choice2 = scanner.nextInt();
-        scanner.nextLine();
-
-        switch (choice2) {
-            case 1: room.setRoomTypeId("1"); break;
-            case 2: room.setRoomTypeId("2"); break;
-            case 3: room.setRoomTypeId("3"); break;
-            default: System.out.println("Lựa chọn không hợp lệ!");
-        }
         System.out.print("Nhập ID khách sạn: ");
         room.setHotelId(scanner.nextLine());
 
+        // Assuming roomTypeId and hotelId are required for creating
+        List<RoomTypeDTO > roomTypes = roomTypeService.getAllRoomTypes(room.getHotelId());
+        if(roomTypes.isEmpty()) {
+            System.out.println("Không có loại phòng nào được định nghĩa cho khách sạn này.");
+            return;
+        }
+        else{
+            System.out.println("Các loại phòng có sẵn: ");
+            for (int i = 0; i < roomTypes.size(); i++) {
+                RoomTypeDTO roomType = roomTypes.get(i);
+                System.out.printf("%s - %s - %s%n", roomType.getId() , roomType.getName(), roomType.getDescription());
+            }
+            System.out.print("Nhập ID loại phòng: ");
+            room.setRoomTypeId(scanner.nextLine());
+        }
         roomService.createRoom(room);
     }
 
@@ -428,6 +508,7 @@ public class HotelReservationApplication implements CommandLineRunner {
 
         System.out.print("Nhập ngày bắt đầu đặt phòng (yyyy-MM-dd): ");
         reservation.setStartTime(LocalDate.parse(scanner.nextLine()));
+
         System.out.print("Nhập ngày kết thúc đặt phòng (yyyy-MM-dd): ");
         reservation.setEndTime(LocalDate.parse(scanner.nextLine()));
 
@@ -489,6 +570,92 @@ public class HotelReservationApplication implements CommandLineRunner {
         String reservationId = scanner.nextLine();
         reservationService.checkOutReservation(reservationId);
     }
+    private void getRoomTypeByHotelId() {
+        System.out.println("Xem các loại phòng của khách sạn");
+        System.out.print("Nhập ID của khạch sạn: ");
+        String hotelId = scanner.nextLine();
+        roomTypeService.getRoomTypeByHotelId(hotelId);
+    }
+
+    private void createRoomType() {
+        System.out.println("Chức năng thêm loại phòng mới cho khách sạn!");
+        RoomTypeDTO roomType = new RoomTypeDTO();
+        System.out.print("Nhập tên loại phòng: ");
+        roomType.setName(scanner.nextLine());
+        System.out.print("Nhập mô tả loại phòng: ");
+        roomType.setDescription(scanner.nextLine());
+        System.out.print("Nhập ID khách sạn: ");
+        String hotelId = scanner.nextLine();
+
+        roomTypeService.createRoomType(roomType, hotelId);
+    }
+
+    private void updateRoomType() {
+        System.out.println("Chức năng cập nhật thông tin loại phòng!");
+        RoomTypeDTO roomType = new RoomTypeDTO();
+        System.out.print("Nhập ID loại phòng cần cập nhật: ");
+        roomType.setId(scanner.nextLine());
+        System.out.print("Nhập tên loại phòng: ");
+        roomType.setName(scanner.nextLine());
+        System.out.print("Nhập mô tả loại phòng: ");
+        roomType.setDescription(scanner.nextLine());
+
+        roomTypeService.updateRoomType(roomType);
+    }
+
+    private void deleteRoomType() {
+        System.out.println("Chức năng xóa loại phòng!");
+
+        System.out.print("Nhập ID loại phòng cần xóa: ");
+        String roomTypeId = scanner.nextLine();
+        roomTypeService.deleteRoomType(roomTypeId);
+    }
+    private void createAsset() {
+        List<AssetDTO> assetDTOS = new ArrayList<>();
+        System.out.print("Nhập ID loại phòng: ");
+        String roomTypeId = scanner.nextLine();
+        while (true) {
+
+            AssetDTO  assetDTO = new AssetDTO();
+            System.out.print("Nhập tên tài sản: ");
+            String assetName = scanner.nextLine();
+            if (assetName.equalsIgnoreCase("done")) {
+                break;
+            }
+            System.out.print("Nhập mô tả tài sản: ");
+            assetDTO.setDescription(scanner.nextLine());
+
+
+            assetDTO.setRoomTypeId(roomTypeId);
+
+            assetDTOS.add(assetDTO);
+
+        }
+        for(AssetDTO asset : assetDTOS) {
+            assetService.createAsset(asset);
+        }
+    }
+
+    private void updateAsset() {
+        System.out.println("Chức năng cập nhật thông tin tài sản!");
+        AssetDTO asset = new AssetDTO();
+        System.out.print("Nhập ID tài sản cần cập nhật: ");
+        asset.setId(scanner.nextLine());
+        System.out.print("Nhập tên tài sản: ");
+        asset.setName(scanner.nextLine());
+        System.out.print("Nhập mô tả tài sản: ");
+        asset.setDescription(scanner.nextLine());
+
+        assetService.updateAsset(asset);
+    }
+
+    private void deleteAsset() {
+        System.out.println("Chức năng xóa tài sản!");
+        System.out.print("Nhập ID tài sản cần xóa: ");
+        String assetId = scanner.nextLine();
+        assetService.deleteAsset(assetId);
+    }
+
 
 
 

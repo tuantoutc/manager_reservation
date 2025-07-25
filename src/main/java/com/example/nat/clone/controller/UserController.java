@@ -3,7 +3,7 @@ package com.example.nat.clone.controller;
 
 import com.example.nat.clone.model.dto.ApiResponse;
 import com.example.nat.clone.model.dto.UserDTO;
-import com.example.nat.clone.model.request.UserRequest;
+import com.example.nat.clone.model.request.UserCreateRequest;
 import com.example.nat.clone.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @PostMapping()
-    public ApiResponse<UserDTO> createUser(@RequestBody @Valid UserRequest request) {
+    public ApiResponse<UserDTO> createUser(@RequestBody @Valid UserCreateRequest request) {
         return ApiResponse.<UserDTO>builder()
                 .code(200)
                 .data(userService.createdUser(request))

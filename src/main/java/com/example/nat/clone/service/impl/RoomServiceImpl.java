@@ -1,16 +1,17 @@
 package com.example.nat.clone.service.impl;
 
 
+import com.example.nat.clone.TableFormatter;
 import com.example.nat.clone.exception.AppException;
 import com.example.nat.clone.exception.ErrorCode;
 import com.example.nat.clone.model.dto.RoomDTO;
 import com.example.nat.clone.model.entity.Hotel;
 import com.example.nat.clone.model.entity.Room;
 import com.example.nat.clone.model.entity.RoomType;
+import com.example.nat.clone.repository.AssetRepository;
 import com.example.nat.clone.repository.HotelRepository;
 import com.example.nat.clone.repository.RoomRepository;
 import com.example.nat.clone.repository.RoomTypeRepository;
-import com.example.nat.clone.service.HotelService;
 import com.example.nat.clone.service.RoomService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -36,6 +37,9 @@ public class RoomServiceImpl implements RoomService {
     private RoomRepository roomRepository;
 
     @Autowired
+    private AssetRepository assetRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
 
@@ -52,11 +56,11 @@ public class RoomServiceImpl implements RoomService {
         Room newRoom = null;
         if(room.getId() == null || room.getId().isEmpty()) {
             Hotel hotel = hotelRepository.findById(room.getHotelId())
-                    .orElseThrow(() -> new IllegalArgumentException("Hotel not found"));
+                    .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
             RoomType roomType =  roomTypeRepository.findById(room.getRoomTypeId())
-                    .orElseThrow(() -> new IllegalArgumentException("Room type not found"));
+                    .orElseThrow(() -> new AppException(ErrorCode.ROOM_TYPE_NOT_FOUND));
 
-            newRoom = new Room().builder()
+            newRoom =  new Room().builder()
                     .name(room.getName())
                     .hotel(hotel)
                     .roomType(roomType)
@@ -65,8 +69,9 @@ public class RoomServiceImpl implements RoomService {
                     .createdAt(LocalDate.now())
                     .updatedAt(LocalDate.now())
                     .build();
-        }
+            roomRepository.save(newRoom);
 
+        }
             return roomRepository.save(newRoom);
     }
 
@@ -79,6 +84,7 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
         roomEntity = modelMapper.map(room, Room.class);
         roomEntity.setUpdatedAt(LocalDate.now());
+
         if(room.getHotelId()== null || room.getHotelId().isEmpty()
         || room.getRoomTypeId() == null || room.getRoomTypeId().isEmpty()) {
             throw new AppException(ErrorCode.BAD_REQUEST);
@@ -142,51 +148,74 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public void displayAllRoomAvailable() {
         List<RoomDTO> rooms = getAllRoomsAvailable();
-        System.out.println("\n=== DANH SÁCH ROOM TRỐNG ===");
-        System.out.println("ID --------------------- Name ----------------- Price ----------------- Status ----------------- RoomTypeId ----------------- HotelId");
-        rooms.forEach(room -> {
-            System.out.printf("%s - %s - %s - %s - %s - %s%n",
-                    room.getId(),
-                    room.getName(),
-                    room.getPrice(),
-                    room.getStatus(),
-                    room.getRoomTypeId(),
-                    room.getHotelId());
-        });
+        System.out.println("\n=== DANH SÁCH ===");
+        printTableRoom(rooms);
 
     }
     @Override
     public void displayAllRoomUnAvailable() {
         List<RoomDTO> rooms = getAllRoomsUnAvailable();
-        System.out.println("\n=== DANH SÁCH ROOM ĐÃ THUÊ ===");
-        System.out.println("ID --------------------- Name ----------------- Price ----------------- Status ----------------- RoomTypeId ----------------- HotelId");
-        rooms.forEach(room -> {
-            System.out.printf("%s - %s - %s - %s - %s - %s%n",
-                    room.getId(),
-                    room.getName(),
-                    room.getPrice(),
-                    room.getStatus(),
-                    room.getRoomTypeId(),
-                    room.getHotelId());;
-        });
+        System.out.println("\n=== DANH SÁCH ROOM  ===");
+        printTableRoom(rooms);
 
     }
     @Override
     public void displayAllRoom() {
-        List<Room> rooms = roomRepository.findAll() ;
-        System.out.println("\n=== DANH SÁCH ROOM ===");
-        System.out.println("ID --------------------- Name ----------------- Price ----------------- Status ----------------- RoomTypeId ----------------- HotelId");
-        rooms.forEach(room -> {
-            System.out.printf("%s - %s - %s - %s - %s - %s%n",
-                    room.getId(),
-                    room.getName(),
-                    room.getPrice(),
-                    room.getStatus(),
-                    room.getRoomType().getId(),
-                    room.getHotel().getId());
-        });
+        List<Room> rooms = roomRepository.findAll();
+        if (rooms == null || rooms.isEmpty()) {
+            System.out.println("Không có phòng nào trong hệ thống.");
+            return;
+        }
+        // Chuyển đổi danh sách Room sang danh sách RoomDT0
+        List<RoomDTO> roomDTOs = rooms.stream()
+                .map(room -> {
+                    RoomDTO roomDTO = modelMapper.map(room, RoomDTO.class);
+                    roomDTO.setRoomTypeId(room.getRoomType().getId());
+                    roomDTO.setHotelId(room.getHotel().getId());
+                    return roomDTO;
+                })
+                .toList();
+        System.out.println("\n=== DANH SÁCH ROOM  ===");
+        printTableRoom(roomDTOs);
 
     }
+
+
+    private void printTableRoom( List<RoomDTO> rooms)
+    {
+
+        String[] headers = {"ID", "Tên phòng", "Giá", "Trạng thái", " ID Khách sạn", "ID Loại phòng"};
+        String[][] data = new String[rooms.size()][6];
+
+        for (int i = 0; i < rooms.size(); i++) {
+            RoomDTO room = rooms.get(i);
+            data[i][0] = room.getId();
+            data[i][1] = room.getName();
+            data[i][2] = String.valueOf(room.getPrice());
+            data[i][3] = room.getStatus();
+            data[i][4] = room.getHotelId() != null ? room.getHotelId(): "";
+            data[i][5] = room.getRoomTypeId() != null ? room.getRoomTypeId() : "";
+        }
+        TableFormatter.printTable(headers, data);
+
+    }
+
+//    public void displayAllRoom() {
+//        List<Room> rooms = roomRepository.findAll() ;
+//        System.out.println("\n=== DANH SÁCH ROOM ===");
+//        System.out.println("ID --------------------- Name ----------------- Price ----------------- Status ----------------- RoomTypeId ----------------- HotelId");
+//        rooms.forEach(room -> {
+//            System.out.printf("%s - %s - %s - %s - %s - %s%n",
+//                    room.getId(),
+//                    room.getName(),
+//                    room.getPrice(),
+//                    room.getStatus(),
+//                    room.getRoomType().getId(),
+//                    room.getHotel().getId());
+//        });
+//
+//    }
+
 
 
 }
